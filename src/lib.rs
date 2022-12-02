@@ -27,7 +27,7 @@ pub fn query(_deps: Deps, _env: Env, msg: msg::QueryMsg) -> StdResult<Binary> {
     use msg::QueryMsg::*;
 
     match msg {
-        Value {} => to_binary(&query::value()),
+        Value {} => to_binary(&query::value(_deps)?),
         Incremented { value } => to_binary(&query::incremented(value)),
     }
 }
@@ -94,5 +94,4 @@ mod test {
 
         assert_eq!(resp, ValueResp { value: 2 });
     }
-
 }
