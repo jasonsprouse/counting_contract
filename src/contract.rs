@@ -1,7 +1,7 @@
-use cosmwasm_std::{DepsMut, Response, StdResult, MessageInfo};
 use crate::state::{COUNTER, MINIMAL_DONATION, OWNER};
+use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult};
 
-use crate::msg::{InstantiateMsg};
+use crate::msg::InstantiateMsg;
 
 pub fn instantiate(deps: DepsMut, info: MessageInfo, msg: InstantiateMsg) -> StdResult<Response> {
     COUNTER.save(deps.storage, &0)?;
@@ -9,7 +9,6 @@ pub fn instantiate(deps: DepsMut, info: MessageInfo, msg: InstantiateMsg) -> Std
     OWNER.save(deps.storage, &info.sender)?;
     Ok(Response::new())
 }
-
 
 pub mod query {
     use crate::msg::ValueResp;
@@ -27,9 +26,12 @@ pub mod query {
 }
 
 pub mod exec {
-    use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult, BankMsg, StdError, Env};
+    use cosmwasm_std::{BankMsg, Coin, DepsMut, Env, MessageInfo, Response, Uint128};
 
-    use crate::state::{COUNTER, MINIMAL_DONATION, OWNER};
+    use crate::{
+        error::ContractError,
+        state::{COUNTER, MINIMAL_DONATION, OWNER},
+    };
 
     // pub fn poke(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     //     let counter = COUNTER.load(deps.storage)? + 1;
@@ -43,10 +45,16 @@ pub mod exec {
     //     Ok(resp)
     // }
 
-    pub fn reset(deps: DepsMut, info: MessageInfo, counter: u64) -> StdResult<Response> {
+    pub fn reset(
+        deps: DepsMut,
+        info: MessageInfo,
+        counter: u64,
+    ) -> Result<Response, ContractError> {
         let owner = OWNER.load(deps.storage)?;
         if info.sender != owner {
-            return Err(StdError::generic_err("Unauthorized"));
+            return Err(ContractError::Unauthorized {
+                owner: owner.to_string(),
+            });
         }
 
         COUNTER.save(deps.storage, &counter)?;
@@ -58,7 +66,7 @@ pub mod exec {
 
         Ok(resp)
     }
-    pub fn donate(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
+    pub fn donate(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
         let counter = COUNTER.load(deps.storage)?;
         let minimal_donation = MINIMAL_DONATION.load(deps.storage)?;
 
@@ -68,7 +76,6 @@ pub mod exec {
             let mut counter = COUNTER.load(deps.storage)?;
             counter += 1;
             COUNTER.save(deps.storage, &counter)?;
-
         }
 
         let resp = Response::new()
@@ -79,23 +86,25 @@ pub mod exec {
         Ok(resp)
     }
 
-    pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
+    pub fn withdraw(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
         let owner = OWNER.load(deps.storage)?;
         if info.sender != owner {
-            return Err(StdError::generic_err("Unauthorized"));
+            return Err(ContractError::Unauthorized {
+                owner: owner.to_string(),
+            });
         }
-    
+
         let balance = deps.querier.query_all_balances(&env.contract.address)?;
         let bank_msg = BankMsg::Send {
             to_address: info.sender.to_string(),
             amount: balance,
         };
-    
+
         let resp = Response::new()
             .add_message(bank_msg)
             .add_attribute("action", "withdraw")
             .add_attribute("sender", info.sender.as_str());
-    
+
         Ok(resp)
     }
 
@@ -105,10 +114,12 @@ pub mod exec {
         info: MessageInfo,
         receiver: String,
         funds: Vec<Coin>,
-    ) -> StdResult<Response> {
+    ) -> Result<Response, ContractError> {
         let owner = OWNER.load(deps.storage)?;
         if info.sender != owner {
-            return Err(StdError::generic_err("Unauthorized"));
+            return Err(ContractError::Unauthorized {
+                owner: owner.to_string(),
+            });
         }
 
         let mut balance = deps.querier.query_all_balances(&env.contract.address)?;
