@@ -66,6 +66,7 @@ pub mod exec {
 
         Ok(resp)
     }
+    
     pub fn donate(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
         let counter = COUNTER.load(deps.storage)?;
         let minimal_donation = MINIMAL_DONATION.load(deps.storage)?;
