@@ -298,7 +298,6 @@ fn unauthorized_reset() {
 
 // ---------------
 
-
 // #[cfg(test)]
 // mod test {
 //     use cosmwasm_std::{coin, coins, Addr, Empty};

@@ -1,5 +1,4 @@
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
-};
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -10,9 +9,9 @@ use msg::InstantiateMsg;
 mod contract;
 mod error;
 pub mod msg;
-mod state;
 #[cfg(any(test, feature = "tests"))]
 pub mod multitest;
+mod state;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
