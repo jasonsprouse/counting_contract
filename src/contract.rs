@@ -4,7 +4,7 @@ use cosmwasm_std::{DepsMut, MessageInfo, Response, StdResult};
 use crate::msg::InstantiateMsg;
 
 pub fn instantiate(deps: DepsMut, info: MessageInfo, msg: InstantiateMsg) -> StdResult<Response> {
-    COUNTER.save(deps.storage, &0)?;
+    COUNTER.save(deps.storage, &msg.counter)?;
     MINIMAL_DONATION.save(deps.storage, &msg.minimal_donation)?;
     OWNER.save(deps.storage, &info.sender)?;
     Ok(Response::new())
