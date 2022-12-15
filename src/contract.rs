@@ -66,18 +66,28 @@ pub mod exec {
 
         Ok(resp)
     }
-    
+
     pub fn donate(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
         let counter = COUNTER.load(deps.storage)?;
         let minimal_donation = MINIMAL_DONATION.load(deps.storage)?;
 
-        if info.funds.iter().any(|coin| {
-            coin.denom == minimal_donation.denom && coin.amount >= minimal_donation.amount
-        }) {
+        if minimal_donation.amount.is_zero()
+            || info.funds.iter().any(|coin| {
+                coin.denom == minimal_donation.denom && coin.amount >= minimal_donation.amount
+            })
+        {
             let mut counter = COUNTER.load(deps.storage)?;
             counter += 1;
             COUNTER.save(deps.storage, &counter)?;
         }
+
+        // if info.funds.iter().any(|coin| {
+        //     coin.denom == minimal_donation.denom && coin.amount >= minimal_donation.amount
+        // }) {
+        //     let mut counter = COUNTER.load(deps.storage)?;
+        //     counter += 1;
+        //     COUNTER.save(deps.storage, &counter)?;
+        // }
 
         let resp = Response::new()
             .add_attribute("action", "donate")
