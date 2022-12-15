@@ -81,14 +81,6 @@ pub mod exec {
             COUNTER.save(deps.storage, &counter)?;
         }
 
-        // if info.funds.iter().any(|coin| {
-        //     coin.denom == minimal_donation.denom && coin.amount >= minimal_donation.amount
-        // }) {
-        //     let mut counter = COUNTER.load(deps.storage)?;
-        //     counter += 1;
-        //     COUNTER.save(deps.storage, &counter)?;
-        // }
-
         let resp = Response::new()
             .add_attribute("action", "donate")
             .add_attribute("sender", info.sender.as_str())
